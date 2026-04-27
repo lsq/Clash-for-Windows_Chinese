@@ -13,19 +13,19 @@ Write-Host 'Checking environment...'
 # Checking static
 if (-not (Test-Path $staticDir)) {
     Write-Error 'Failed! "static" folder not found!'
-    Read-Host 'Press Enter to exit'
+    # Read-Host 'Press Enter to exit'
     exit 1
 }
 # Checking main
 if (-not (Test-Path $mainDir)) {
     Write-Error 'Failed! "main" folder not found!'
-    Read-Host 'Press Enter to exit'
+    # Read-Host 'Press Enter to exit'
     exit 1
 }
 # Checking logo.ico
 if (-not (Test-Path $logoFile)) {
     Write-Error 'Failed! "logo.ico" not found!'
-    Read-Host 'Press Enter to exit'
+    # Read-Host 'Press Enter to exit'
     exit 1
 }
 
@@ -36,7 +36,7 @@ if ($LASTEXITCODE -eq 0) {
 } else {
     Write-Error 'Failed! No npm command!'
     Write-Host 'Install Node.js might fix this.'
-    Read-Host 'Press Enter to exit'
+    # Read-Host 'Press Enter to exit'
     exit 1
 }
 
@@ -47,7 +47,7 @@ if ($LASTEXITCODE -eq 0) {
 } else {
     Write-Warning 'Failed! No electron-packager command!'
     Write-Host 'But npm is detected!'
-    Read-Host 'Press Enter to install electron-packager or Ctrl+C to exit'
+    # Read-Host 'Press Enter to install electron-packager or Ctrl+C to exit'
     npm install -g electron-packager
 }
 
@@ -58,7 +58,7 @@ if ($LASTEXITCODE -eq 0) {
 } else {
     Write-Warning 'Failed! No asar command!'
     Write-Host 'But npm is detected!'
-    Read-Host 'Press Enter to install asar or Ctrl+C to exit'
+    # Read-Host 'Press Enter to install asar or Ctrl+C to exit'
     npm install -g asar
 }
 
@@ -67,13 +67,13 @@ Write-Host 'Success!'
 # Clear old output
 if (Test-Path $oldWinDir) {
     Write-Host 'Detected old output!'
-    Read-Host 'Press Enter to delete and rebuild'
+    # Read-Host 'Press Enter to delete and rebuild'
     Remove-Item -Recurse -Force $oldWinDir
     Write-Host 'Success!'
 }
 if (Test-Path $wrongWinDir) {
     Write-Host 'Detected wrong building files!'
-    Read-Host 'Press Enter to delete and continue'
+    # Read-Host 'Press Enter to delete and continue'
     Remove-Item -Recurse -Force $wrongWinDir
     Write-Host 'Success!'
 }
@@ -85,10 +85,9 @@ if (-not (Test-Path $outputDir)) {
 
 # Start packaging
 Write-Host 'Starting electron-packager...'
-& npx electron-packager `
-    "`"$mainDir`"" "Clash for Windows" `
+& npx electron-packager "$mainDir" "Clash for Windows" `
     --platform=win32 --arch=x64 --electron-version=34.0.0 `
-    --icon="`"$logoFile`"" --out="`"$outputDir`"" --prune=true --asar
+    --icon="$logoFile" --out="$outputDir" --prune=true --asar
 if ($LASTEXITCODE -ne 0) {
     Write-Error 'electron-packager Failed!'
     exit 1
@@ -126,4 +125,4 @@ Copy-Item -Path "$staticDir\*" -Destination $destStatic -Recurse -Force
 Write-Host 'Success!'
 
 Write-Host 'Finish!'
-Read-Host 'Press Enter to exit'
+# Read-Host 'Press Enter to exit'
