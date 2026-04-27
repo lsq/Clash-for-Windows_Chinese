@@ -476,6 +476,10 @@ function language(v, en, cn) {
                 "use strict";
                 e.exports = require("fix-path")
             },
+            // 950: e => {
+            //     "use strict";
+            //     e.exports = require("electron-log")
+            // },
             793: e => {
                 "use strict";
                 e.exports = require("lodash")
@@ -520,6 +524,71 @@ function language(v, en, cn) {
             value: !0
         })
     };
+    // var lgg = n(950);
+    // lgg.initialize();
+    // lgg.transports.console.format = '{h}:{i}:{s}.{ms} [{level}] {text}';
+    //function(e) {
+    //                return e.data
+    //            },
+    // lgg.transports.file.format = function(e) {
+    //                 return 'time="'.concat(e.date, '" level=').concat(e.level, ' msg="').concat(e.data, '"')
+    //             };
+    // --- 开始：日志重定向到文件 ---
+// var fs = n(147); // fs 模块
+// var path = n(17); // path 模块
+
+// 定义日志文件的路径，这里放在应用目录下的 logs 文件夹里
+// var logDir = path.join("d:/tmp/", 'logs');
+// var logFile = path.join(logDir, 'main.log');
+
+// 确保 logs 目录存在
+// if (!fs.existsSync(logDir)) {
+//   fs.mkdirSync(logDir, { recursive: true });
+// }
+
+// 创建一个可写流，用于追加写入日志文件
+// var logStream = fs.createWriteStream(logFile, { flags: 'a' });
+//
+// // 保存原始的 console 方法
+// var originalLog = console.log;
+// var originalError = console.error;
+// var originalWarn = console.warn;
+
+// 重写 console.log
+// console.log = function() {
+//   var message = Array.prototype.slice.call(arguments).join(' ') + '\n';
+//   originalLog.apply(console, arguments); // 仍然在控制台输出
+//   logStream.write('[LOG] ' + new Date().toISOString() + ' - ' + message);
+// };
+
+// 重写 console.error
+// console.error = function() {
+//   var message = Array.prototype.slice.call(arguments).join(' ') + '\n';
+//   originalError.apply(console, arguments); // 仍然在控制台输出
+//   logStream.write('[ERROR] ' + new Date().toISOString() + ' - ' + message);
+// };
+
+// 重写 console.warn
+// console.warn = function() {
+//   var message = Array.prototype.slice.call(arguments).join(' ') + '\n';
+//   originalWarn.apply(console, arguments); // 仍然在控制台输出
+//   logStream.write('[WARN] ' + new Date().toISOString() + ' - ' + message);
+// };
+
+// 监听未捕获的异常，并记录到文件
+// process.on('uncaughtException', function(err) {
+//   console.error('Uncaught Exception:', err);
+  // 可以选择在此处退出进程
+  // process.exit(1);
+// });
+
+// 监听未处理的 Promise 拒绝
+// process.on('unhandledRejection', function(reason, promise) {
+//   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // 可以选择在此处退出进程
+  // process.exit(1);
+// });
+// --- 结束：日志重定向到文件 ---
     var r = {};
     (() => {
         "use strict";
@@ -567,7 +636,16 @@ function language(v, en, cn) {
             _ = n(147),
             S = n(793),
             O = n(948);
-        global.__static = n(17).join(__dirname, "/static").replace(/\\/g, "\\\\"), O(), host.app.disableHardwareAcceleration(), host.app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors"), "darwin" === process.platform && host.app.dock.hide();
+// var safeStringify = function(obj) {
+//   try {
+//     return JSON.stringify(obj, null, 2);
+//   } catch (e) {
+//     // 如果 JSON.stringify 失败（例如对象有循环引用），就返回其类型和构造函数
+//     return '[Non-serializable Object] Type: ' + typeof obj + ', Constructor: ' + (obj && obj.constructor ? obj.constructor.name : 'Unknown');
+//   }
+// };
+        // console.log('Debug: Module 948 (fix-path) is:\n' + safeStringify(O));
+        global.__static = n(17).join(__dirname, "/static").replace(/\\/g, "\\\\"), ("darwin" === process.platform || "linux" === process.platform) && O(), host.app.disableHardwareAcceleration(), host.app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors"), "darwin" === process.platform && host.app.dock.hide();
         var P, I = [],
             T = "file://".concat(__dirname, "/index.html");
 
