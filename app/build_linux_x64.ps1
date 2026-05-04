@@ -78,10 +78,13 @@ if (-not (Test-Path $outputDir)) {
 
 # Start packaging
 Write-Host 'Starting electron-packager...'
-& npx electron-packager `
-    "`"$mainDir`"" "cfw" `
-    --platform=linux --arch=x64 --electron-version=34.0.0 `
-    --icon="`"$logoFile`"" --out="`"$outputDir`"" --prune=true --asar
+# & npx electron-packager `
+#     "`"$mainDir`"" "cfw" `
+#     --platform=linux --arch=x64 --electron-version=34.0.0 `
+#     --icon="`"$logoFile`"" --out="`"$outputDir`"" --prune=true --asar
+& npx electron-packager "$mainDir" "cfw" `
+    --platform=linux --arch=x64 --electron-version=41.3.0 `
+    --icon="$logoFile" --out="$outputDir" --prune=true --asar
 if ($LASTEXITCODE -ne 0) {
     Write-Error 'electron-packager Failed!'
     exit 1
