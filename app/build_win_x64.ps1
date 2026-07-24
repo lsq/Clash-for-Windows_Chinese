@@ -90,7 +90,7 @@ Write-Host 'Starting electron-packager...'
 #     --platform=win32 --arch=x64 --electron-version=34.0.0 `
 #     --icon="`"$logoFile`"" --out="`"$outputDir`"" --prune=true --asar
 & npx electron-packager "$mainDir" "Clash for Windows" `
-    --platform=win32 --arch=x64 --electron-version=41.3.0 `
+    --platform=win32 --arch=x64 --electron-version=43.2.0 `
     --icon="$logoFile" --out="$outputDir" --prune=true --asar
 
 if ($LASTEXITCODE -ne 0) {

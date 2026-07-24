@@ -156749,7 +156749,7 @@ var modifyState = {
                 var e = this.filterTypes[this.filterTypeIndex].key,
                   t = [];
                 return (
-                  this.data.connections.forEach(function (i) {
+                  this.data.connections?.forEach(function (i) {
                     var n = ((null == i ? void 0 : i.metadata) || {})[e];
                     t.includes(n) || t.push(n);
                   }),
@@ -165441,19 +165441,21 @@ var modifyState = {
                   }),
                 )();
               },
-              nodeHint: function (e) {
-                var t = this.proxies.find(function (t) {
+              nodeHint: function (e) { //修改适配provider场景
+				var p, f;
+				e.provider ? (p = e.provider.proxies, f = 1) : (p = this.proxies, f = 0);
+                var t = p.find(function (t) {
                   return t.name === e.name;
                 });
                 if (!t) return "";
-                var i = t.data.type;
+                var i = f ? t.type : t.data.type;
                 return "Selector" === i || "Fallback" === i || "URLTest" === i
-                  ? "".concat(i, " - ").concat(t.data.now)
+                  ? "".concat(i, " - ").concat(f ? t.now : t.data.now)
                   : "LoadBalance" === i
                     ? ""
                         .concat(i, " - ")
-                        .concat(t.data.all.length, " server")
-                        .concat(t.data.all.length > 1 ? "s" : "")
+                        .concat(f ? t?.all?.length : t.data.all.length, " server")
+                        .concat((f ? t?.all?.length : t.data.all.length) > 1 ? "s" : "")
                     : i;
               },
               cancelLatencyTest: function () {
@@ -166319,7 +166321,7 @@ var modifyState = {
                                                                             o
                                                                               .provider
                                                                               .name,
-                                                                          )
+                                                                          ).concat('|', e.nodeHint(o)) //添加协议
                                                                         : e.nodeHint(
                                                                             o,
                                                                           ),
@@ -172465,7 +172467,7 @@ var modifyState = {
           function () {
             var e = this,
               t = e._self._c;
-            return e.$slots.default.length
+            return e.$slots.default?.length
               ? t(
                   "div",
                   {
