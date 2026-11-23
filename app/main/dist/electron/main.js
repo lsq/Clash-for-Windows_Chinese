@@ -645,7 +645,7 @@ function language(v, en, cn) {
 //   }
 // };
         // console.log('Debug: Module 948 (fix-path) is:\n' + safeStringify(O));
-        global.__static = n(17).join(__dirname, "/static").replace(/\\/g, "\\\\"), ("darwin" === process.platform || "linux" === process.platform) && O(), host.app.disableHardwareAcceleration(), host.app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors"), "darwin" === process.platform && host.app.dock.hide();
+        global.__static = n(17).join(__dirname, "/static").replace(/\\/g, "\\\\"), ("darwin" === process.platform) && O(), host.app.disableHardwareAcceleration(), host.app.commandLine.appendSwitch("disable-features", "OutOfBlinkCors"), "darwin" === process.platform && host.app.dock.hide();
         var P, I = [],
             T = "file://".concat(__dirname, "/index.html");
 
@@ -694,7 +694,9 @@ function language(v, en, cn) {
                 }
             })).setMenu(null), g.webContents.on("will-navigate", function(types) {
                 return types.preventDefault();
-            }), g.loadURL(T, {
+            }), //g.webContents.openDevTools(), // ← 关键！在 loadURL 前或后立即调用
+                // host.dialog.showMessageBoxSync(g, { message: "等待调试：请在点击确定后，立即在 DevTools 中操作" }),
+                g.loadURL(T, {
                 userAgent: "ClashforWindows/".concat(host.app.getVersion())
             }), g.webContents.on("render-process-gone", (e = l()(p().mark(function e$$12(n, err) {
                 var reason;

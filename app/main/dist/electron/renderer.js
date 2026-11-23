@@ -579,7 +579,7 @@ var modifyState = {
                         var a = e[s](r),
                             l = a.value
                     } catch (e) {
-                        return void i(e)
+                        return void i(e.stack)
                     }
                     a.done ? t(l) : Promise.resolve(l).then(n, o)
                 }
@@ -2322,7 +2322,7 @@ var modifyState = {
                                     return e.abrupt("return", y.Inactive);
                                 case 4:
                                     return e.next = 6, b.get("http://127.0.0.1:53000/ping", {
-                                        timeout: 5e3
+                                        timeout: 3e4
                                     });
                                 case 6:
                                     return n = e.sent, o = n.status, e.abrupt("return", 200 === o ? y.Active : y.Inactive);
@@ -91978,7 +91978,7 @@ var modifyState = {
                                 var e = this;
                                 if (this.stopRequest(), this.isWindowShow || !this.trayDisabled) {
                                     var t, i = this.clashWSClient("traffic");
-                                    if (this.trayIconImg || (this.trayIconImg = this.iconImage(N.join(this.resourcesPath, "static/imgs/logo_64_eyes.png"))), i) {
+                                    if (this.trayIconImg || (this.trayIconImg = this.iconImage("static/imgs/logo_64_eyes.png")), i) {
                                         var n = this.canvas.getContext("2d"),
                                             o = function(t, i, n) {
                                                 var o, s = {
@@ -93885,7 +93885,7 @@ var modifyState = {
                                             }), e.spawnClash()), t.next = 34;
                                             break;
                                         case 26:
-                                            l = [], e.portableMode && (l = ["-d", e.clashPath]), c = J().spawn(o, l, {
+                                            l = [], e.info("正在启动" + o + "\n配置文件目录: " + e.clashPath), (e.portableMode || true) && (l = ["-d", e.clashPath]), c = J().spawn(o, l, {
                                                 windowsHide: !0
                                             }), e.clash = c, _.Z.put(W.Z.LAST_CLASH_PID, e.clash.pid), c.stdout.on("data", function() {
                                                 var t = d()(u().mark((function t(i) {
@@ -93902,7 +93902,7 @@ var modifyState = {
                                                                     status: t.t1
                                                                 }, t.t0.setClashStatus.call(t.t0, t.t2);
                                                             case 8:
-                                                                /ERR/.test(i.toString()) && ee.error(Lg.clashCoreFailedStartup());
+                                                                /ERR/.test(i.toString()) && ee.error(Lg.clashCoreFailedStartup() + "\n" + i.toString().match(/ERR/)?.[0]);
                                                             case 9:
                                                             case "end":
                                                                 return t.stop()
@@ -94796,7 +94796,7 @@ var modifyState = {
                                                 e.settings.checkForUpdates && e.checkForUpdate().then((function(e) {})).catch((function(e) {
                                                     return console.error(e)
                                                 }))
-                                            }), 216e5), e.preDownloadAds().then((function(e) {})).catch((function(e) {
+                                            }), 216e5), false && e.preDownloadAds().then((function(e) {})).catch((function(e) {
                                                 return console.error(e)
                                             })), setInterval(e.profileUpdater, 6e4), e.profileUpdater(), !(0, w.Kr)()) {
                                             t.next = 134;
@@ -98192,7 +98192,7 @@ var modifyState = {
                                             }
                                             return t.next = 3, e.clashAxiosClient.get("/version");
                                         case 3:
-                                            i = t.sent, (n = i.data) ? (o = n.premium, s = n.version, e.clashCoreVersion = void 0 !== o && void 0 !== s ? "".concat(s, " ").concat(o ? "Premium" : "") : "Unknown") : e.clashCoreVersion = "Unknown";
+                                            i = t.sent, (n = i.data) ? (o = (n.premium || n.meta), s = n.version, e.clashCoreVersion = void 0 !== o && void 0 !== s ? "".concat(s, " ").concat(n.premium ? "Premium" : "Meta") : "Unknown") : e.clashCoreVersion = "Unknown";
                                         case 6:
                                         case "end":
                                             return t.stop()
