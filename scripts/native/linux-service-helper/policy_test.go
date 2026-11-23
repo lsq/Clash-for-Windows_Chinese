@@ -63,6 +63,37 @@ func TestServicePolicyRejectsNetworkPathsAndModifiedCores(t *testing.T) {
 	}
 }
 
+func TestServicePolicySkipCoreVerificationAcceptsModifiedCores(t *testing.T) {
+	directory, _ := fixturePolicy(t)
+	target := filepath.Join(directory, "cores", "clash-linux")
+	if err := os.WriteFile(target, []byte("manually replaced mihomo"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := loadServicePolicy(directory); err == nil {
+		t.Fatal("modified core accepted without the skip toggle")
+	}
+	config, err := os.ReadFile(filepath.Join(directory, "service-config.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var settings map[string]any
+	if err := json.Unmarshal(config, &settings); err != nil {
+		t.Fatal(err)
+	}
+	settings["skipCoreVerification"] = true
+	updated, _ := json.Marshal(settings)
+	if err := os.WriteFile(filepath.Join(directory, "service-config.json"), updated, 0600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := loadServicePolicy(directory)
+	if err != nil {
+		t.Fatalf("skip toggle rejected a replaced core: %v", err)
+	}
+	if !loaded.SkipCoreVerification || loaded.corePaths["clash-linux"] != target {
+		t.Fatal("skip toggle did not keep the installed core path")
+	}
+}
+
 func TestServiceAuthorizationRejectsMissingCredentialsOriginsAndRebinding(t *testing.T) {
 	_, policy := fixturePolicy(t)
 	called := 0

@@ -193,6 +193,8 @@
   "notRemoveTapDevice": "counld not remove cfw-tap device",
   "TUNmode": "TUN Mode",
   "TUNmodeDescribe": "To enable this mode, please install Service Mode first. After enabling, all applications can be proxied.",
+  "skipMihomoVerification": "Skip Mihomo Verification",
+  "skipMihomoVerificationDescribe": "When enabled, Service Mode on Linux/Windows no longer verifies the hash of core binaries (useful when mihomo is replaced manually). This reduces security; reinstall or update Service Mode to apply",
   "recommended": "recommended",
   "installMethod": "Install method:",
   "cmmandsInCopied": "Commands have been copied to Clipboad",

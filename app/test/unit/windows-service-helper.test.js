@@ -42,6 +42,11 @@ for (const variant of variants) {
     assert.match(script, /Security\.Cryptography\.SHA256/);
     assert.match(script, /Get-FileSha256 \$fullPath/);
     assert.match(script, /Core is not allow-listed/);
+    // The opt-in "Skip Mihomo Verification" toggle bypasses only the hash
+    // comparisons; the allow-list and redirect checks must stay in place.
+    assert.match(script, /\$script:skipCoreVerification = \(\$policy\.PSObject\.Properties\.Name -contains 'skipCoreVerification'\) -and \[bool\]\$policy\.skipCoreVerification/);
+    assert.match(script, /if \(-not \$script:skipCoreVerification\) \{\s*\$actualHash = \(Get-FileSha256 \$fullPath\)/);
+    assert.match(script, /\(\(-not \$script:skipCoreVerification\) -and \(Get-FileSha256 \$dependencyPath\) -ine \$dependency\.sha256\)/);
     assert.match(script, /\$startInfo\.Arguments = '-d "' \+ \$workingDirectory \+ '"'/);
     assert.match(script, /\$client\.ReceiveTimeout = 1000/);
     assert.match(script, /function Try-WriteHttpResponse/);

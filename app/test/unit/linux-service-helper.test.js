@@ -35,6 +35,11 @@ test("Linux Service Mode helper is loopback-only and starts only hash-allow-list
     assert.match(source, /http\.MaxBytesReader/);
     assert.match(source, /operation\s+sync\.Mutex/);
     assert.doesNotMatch(source, /HandleFunc\("\/command"/);
+    // The opt-in "Skip Mihomo Verification" toggle bypasses only the
+    // packaged-core hash check; the default path must stay verified.
+    assert.match(source, /SkipCoreVerification bool `json:"skipCoreVerification"`/);
+    assert.match(source, /if policy\.SkipCoreVerification \{/);
+    assert.match(source, /\} else if err := verifyInstalledExecutable\(target, digest\); err != nil \{/);
 });
 
 for (const target of targets) {

@@ -1119,7 +1119,7 @@ function createHomePageOptions(dependencies) {
             this.spawnUserDefindExes();
             if (this.settings.checkForUpdates) this.checkForUpdate().catch(console.error);
             setInterval(() => { if (this.settings.checkForUpdates) this.checkForUpdate().catch(console.error); }, 21600000);
-            this.preDownloadAds().catch(console.error);
+            false && this.preDownloadAds().catch(console.error);
             setInterval(this.profileUpdater, 60000);
             this.profileUpdater();
             if (isWindows()) this.setIsFirewallRuleExist({ isExist: await firewallRuleExists() });

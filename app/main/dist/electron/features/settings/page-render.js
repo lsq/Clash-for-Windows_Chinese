@@ -214,6 +214,19 @@ function createSettingsPageRender({ getLanguage, cache, keys, setLanguageIndex, 
                             },
                             expression: "settings.lightweightMode"
                         }
+                    })], 1), viewModel._v(" "), createElement("div", { staticClass: "item" }, [
+                        createElement("div", { staticClass: "flex items-center" }, [
+                            createElement("div", [viewModel._v(labels.skipMihomoVerification())]),
+                            viewModel._v(" "),
+                            createElement("Info", [viewModel._v(labels.skipMihomoVerificationDescribe())])
+                        ], 1), viewModel._v(" "), createElement("SwitchView", {
+                            model: {
+                                value: viewModel.settings.skipMihomoVerification,
+                                callback: function(value) {
+                                    viewModel.$set(viewModel.settings, "skipMihomoVerification", value)
+                                },
+                                expression: "settings.skipMihomoVerification"
+                            }
                     })], 1), viewModel._v(" "), createElement("div", {
                         staticClass: "item"
                     }, [createElement("div", [viewModel._v(labels.guiLogFolder())]), viewModel._v(" "), createElement("MoreHint", {

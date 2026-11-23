@@ -74,7 +74,7 @@ function createGeneralPageWorkflow({
         "settings.proxyCore"() { this.invalidateCoreVersion(); this.refreshFirewallStatus(); },
         isLocalMode() { this.refreshFirewallStatus(); },
         "$parent.isCoreRestarting"(value) { if (value) this.invalidateCoreVersion(); else this.refreshFirewallStatus(); },
-        async clashPath() { this.serviceNeedUpdate = await service.needUpdate(); }
+        async clashPath() { this.serviceNeedUpdate = this.settings.skipServiceUpdateCheck ? false : await service.needUpdate(); }
     };
 
     const computed = {
@@ -199,13 +199,13 @@ function createGeneralPageWorkflow({
                         await utilities.showMessageBox({ type: "error", message: labels.serviceAlreadyInstalled() });
                         return;
                     }
-                    await this.applyServiceChange("install", method);
+                    await this.applyServiceChange("install", method, { skipMihomoVerification: this.settings.skipMihomoVerification });
                 }
                 if (selection === 1) {
                     await this.applyServiceChange("uninstall");
                 }
                 if (selection === 2) {
-                    await this.applyServiceChange("update");
+                    await this.applyServiceChange("update", { skipMihomoVerification: this.settings.skipMihomoVerification });
                 }
             } catch (error) {
                 if (selection === undefined) return;
@@ -303,7 +303,7 @@ function createGeneralPageWorkflow({
                 });
                 try {
                     if (response === 0) {
-                        await this.applyServiceChange(this.serviceNeedUpdate ? "update" : "install");
+                        await this.applyServiceChange(this.serviceNeedUpdate ? "update" : "install", { skipMihomoVerification: this.settings.skipMihomoVerification });
                     }
                 } catch (error) {
                     const [selection] = await this.$select({
@@ -607,7 +607,7 @@ function createGeneralPageWorkflow({
     function beforeRouteEnter(_to, _from, next) {
         next(async vm => {
             vm.version = `v${await electron.ipcRenderer.invoke("app", "getVersion")}`;
-            vm.serviceNeedUpdate = await service.needUpdate();
+            vm.serviceNeedUpdate = vm.skipMihomoVerification ? false : await service.needUpdate();
             vm.setupComponent();
             schedule(vm.setupSwitches, 1);
         });

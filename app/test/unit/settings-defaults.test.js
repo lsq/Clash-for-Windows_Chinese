@@ -34,6 +34,10 @@ assert.deepEqual(defaults, {
     disableLoadingAdsLink: true,
     allowRemoteProfileParsers: false,
     allowHttpExternalLinks: false,
+    trayProxiesStyle: 2,
+    skipServiceUpdateCheck: false,
+    useSystemMihomo: false,
+    skipMihomoVerification: false,
     proxyCore: "mihomo"
 });
 

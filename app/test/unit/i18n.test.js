@@ -82,7 +82,8 @@ test("i18n preserves migrated catalogs apart from reviewed additions and copy up
         "webSocketPath", "webSocketHeaders",
         "dnsAnswer", "dnsAdditional", "dhcpIPRange", "rangeFrom", "rangeTo", "primaryDNS", "alternativeDNS", "continueAction",
         "profileNotMapping", "mixinNotMapping", "selectedProfileMissing", "profileSwitchStatus", "profileApplyError", "profileErrorLocation", "profileInvalidYaml",
-        "tapAdapter", "tapPermission", "tapPermissionDescribe", "tapMixinOnly", "tapDisable", "tapStatusUnknown", "tapNotInstalled", "tapDisabled", "tapRestricted", "tapEnabled", "tapEnabledDescribe", "tapMixinDescribe", "tapDisabledDescribe", "tapAuthorizationExample", "tapYamlAuthorization", "tapJsAuthorization"
+        "tapAdapter", "tapPermission", "tapPermissionDescribe", "tapMixinOnly", "tapDisable", "tapStatusUnknown", "tapNotInstalled", "tapDisabled", "tapRestricted", "tapEnabled", "tapEnabledDescribe", "tapMixinDescribe", "tapDisabledDescribe", "tapAuthorizationExample", "tapYamlAuthorization", "tapJsAuthorization",
+        "skipMihomoVerification", "skipMihomoVerificationDescribe"
     ]);
     for (const [locale, hash] of Object.entries(hashes)) {
         const catalog = require(`../../main/dist/electron/core/i18n/locales/${locale}.json`);

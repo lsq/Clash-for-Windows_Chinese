@@ -289,6 +289,30 @@ test("general page route entry loads version, service status and initializes the
     ]);
 });
 
+test("skipServiceUpdateCheck suppresses the needUpdate probe on route entry and clashPath watch", async () => {
+    const calls = [];
+    const { workflow } = createWorkflow({
+        electron: { ipcRenderer: { invoke: async () => "1.2.3" }, shell: {}, clipboard: {} },
+        service: { needUpdate: () => { calls.push(["service"]); return true; } },
+        schedule: callback => callback()
+    });
+    const page = {
+        settings: { skipServiceUpdateCheck: true },
+        setupComponent() { calls.push(["setup"]); },
+        setupSwitches() { calls.push(["switches"]); }
+    };
+
+    workflow.beforeRouteEnter(null, null, callback => callback(page));
+    await new Promise(resolve => setImmediate(resolve));
+
+    assert.equal(page.serviceNeedUpdate, false);
+    assert.deepEqual(calls, [["setup"], ["switches"]]);
+
+    await workflow.watch.clashPath.call(page);
+    assert.equal(page.serviceNeedUpdate, false);
+    assert.deepEqual(calls, [["setup"], ["switches"]]);
+});
+
 test("service install, update and uninstall keep the blocker through relaunch", async () => {
     for (const action of ["install", "update", "uninstall"]) {
         let finishService, finishReload;

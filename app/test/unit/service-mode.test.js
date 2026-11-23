@@ -72,7 +72,7 @@ async function run() {
     const linux = createServiceModeManager({
         platform: "linux",
         arch: "arm64",
-        fs: fakeFileSystem(["/clash/service"]),
+        fs: fakeFileSystem(["/clash/service", "/run/systemd/system", "/usr/lib/systemd/system"]),
         path: path.posix,
         sudoExec: elevatedRecorder(linuxCalls),
         serviceApi: { ping: () => Promise.resolve({ status: 503 }) },
@@ -311,6 +311,76 @@ async function run() {
     assert.equal(await delayedWindowsService.statusService(), SERVICE_STATUS.Active);
     assert.equal(pingAttempts, 3);
     assert.deepEqual(statusPingTimeouts, [400, 400, 400]);
+
+    // "Skip Mihomo Verification" must reach the service credentials as
+    // skipCoreVerification on Linux and Windows, and stay absent when off.
+    const linuxSkipExtras = [];
+    const linuxSkipVerification = createManager({
+        platform: "linux",
+        arch: "x64",
+        fs: fakeFileSystem(["/clash/service", "/run/systemd/system", "/usr/lib/systemd/system"]),
+        path: path.posix,
+        sudoExec: elevatedRecorder([]),
+        serviceApi: { ping: () => Promise.resolve({ status: 200 }) },
+        getFilesPath: () => "/files",
+        getClashPath: () => "/clash",
+        hashFile: () => "same",
+        prepareCredentials: extra => {
+            linuxSkipExtras.push(extra);
+            return { file: "/clash/.cfw-service-client.json" };
+        }
+    });
+    await linuxSkipVerification.installService(undefined, { skipMihomoVerification: true });
+    assert.deepEqual(linuxSkipExtras, [{ skipCoreVerification: true }]);
+    await linuxSkipVerification.updateService({ skipMihomoVerification: false });
+    assert.equal(linuxSkipExtras[1], undefined);
+    await linuxSkipVerification.installService();
+    assert.equal(linuxSkipExtras[2], undefined);
+
+    const windowsSkipExtras = [];
+    const windowsSkipVerification = createManager({
+        platform: "win32",
+        arch: "x64",
+        fs: fakeFileSystem([]),
+        path: path.win32,
+        sudoExec: elevatedRecorder([]),
+        serviceApi: { ping: () => Promise.resolve({ status: 200 }) },
+        getFilesPath: () => "C:\\files",
+        getClashPath: () => "C:\\clash",
+        hashFile: () => "same",
+        programFiles: "C:\\Program Files",
+        prepareCredentials: extra => {
+            windowsSkipExtras.push(extra);
+            return { file: "C:\\clash\\.cfw-service-client.json" };
+        }
+    });
+    await windowsSkipVerification.installService(0, { skipMihomoVerification: true });
+    assert.deepEqual(windowsSkipExtras, [{ skipCoreVerification: true }]);
+    await windowsSkipVerification.installService(0);
+    assert.equal(windowsSkipExtras[1], undefined);
+
+    const windowsUpdateExtras = [];
+    const windowsUpdateSkipVerification = createManager({
+        platform: "win32",
+        arch: "x64",
+        fs: fakeFileSystem([installedWindowsDirectory]),
+        path: path.win32,
+        sudoExec: elevatedRecorder([]),
+        serviceApi: {
+            ping: () => Promise.resolve({ status: 200 }),
+            shutdown: () => Promise.resolve({ status: 200 })
+        },
+        getFilesPath: () => "C:\\files",
+        getClashPath: () => "C:\\clash",
+        hashFile: () => "same",
+        programFiles: "C:\\Program Files",
+        prepareCredentials: extra => {
+            windowsUpdateExtras.push(extra);
+            return { file: "C:\\clash\\.cfw-service-client.json" };
+        }
+    });
+    await windowsUpdateSkipVerification.updateService({ skipMihomoVerification: true });
+    assert.deepEqual(windowsUpdateExtras, [{ skipCoreVerification: true }]);
 
     const rendererSource = readRendererCompositionSource(root);
     assert.doesNotMatch(rendererSource, /features\/service-mode\/service-mode-manager/);

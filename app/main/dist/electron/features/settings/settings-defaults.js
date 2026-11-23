@@ -28,6 +28,7 @@ function mergeSettings(settings = {}) {
         disableLoadingAdsLink: settings.disableLoadingAdsLink !== false,
         allowRemoteProfileParsers: settings.allowRemoteProfileParsers === true,
         allowHttpExternalLinks: settings.allowHttpExternalLinks === true,
+        skipMihomoVerification: settings.skipMihomoVerification === true,   // 新增，默认 false = service 模式校验核心二进制哈希
         proxyCore: normalizeCoreType(settings.proxyCore)
     };
 }

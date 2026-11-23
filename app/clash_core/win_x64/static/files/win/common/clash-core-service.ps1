@@ -17,6 +17,9 @@ foreach ($entry in $manifest.cores) {
 
 $policy = Get-Content -LiteralPath $ConfigPath -Raw | ConvertFrom-Json
 if ($policy.token -cnotmatch '^[a-f0-9]{64}$') { throw 'Invalid service credentials' }
+# Opt-in from the app settings ("Skip Mihomo Verification"): allow manually
+# replaced core binaries to run without matching the packaged manifest hashes.
+$script:skipCoreVerification = ($policy.PSObject.Properties.Name -contains 'skipCoreVerification') -and [bool]$policy.skipCoreVerification
 $script:dataDirectory = [IO.Path]::GetFullPath([string]$policy.dataDirectory)
 if (-not (Test-Path -LiteralPath $script:dataDirectory -PathType Container)) { throw 'Invalid service data directory' }
 $script:coreDirectory = [IO.Path]::GetFullPath($CoreDirectory)
@@ -214,9 +217,11 @@ function Resolve-TrustedCore {
     $item = Get-Item -LiteralPath $fullPath
     if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw [UnauthorizedAccessException]::new('Core is redirected') }
 
+    if (-not $script:skipCoreVerification) {
     $actualHash = (Get-FileSha256 $fullPath).ToUpperInvariant()
     if ($actualHash -ne $trustedHashes[$name]) {
         throw [UnauthorizedAccessException]::new('Core hash does not match the packaged manifest')
+    }
     }
 
     if ($manifest.PSObject.Properties.Name -contains 'dependencies') {
@@ -227,7 +232,7 @@ function Resolve-TrustedCore {
             $dependencyPath = Join-Path $script:coreDirectory $dependencyName
             $dependencyItem = Get-Item -LiteralPath $dependencyPath
             if ($dependencyItem.PSIsContainer -or ($dependencyItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
-                (Get-FileSha256 $dependencyPath) -ine $dependency.sha256) { throw [UnauthorizedAccessException]::new('Core dependency is redirected or modified') }
+                ((-not $script:skipCoreVerification) -and (Get-FileSha256 $dependencyPath) -ine $dependency.sha256)) { throw [UnauthorizedAccessException]::new('Core dependency is redirected or modified') }
         }
     }
 

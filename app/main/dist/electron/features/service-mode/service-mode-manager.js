@@ -42,6 +42,19 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target`;
 
+const LINUX_OPENRC_SERVICE = `
+#!/sbin/openrc-run
+name="clash-core-service"
+description="Clash core service created by Clash for Windows"
+command="helperPath"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+depend() {
+    need net
+    after firewall
+}
+`;
+
 function createServiceModeManager(dependencies) {
     const {
         platform,
@@ -98,9 +111,9 @@ function createServiceModeManager(dependencies) {
         : platform === "linux" ? createLinuxManager() : createWindowsManager();
     const api = adminActions ? {
         ...localApi,
-        installService: method => adminActions.install(method),
+        installService: (method, options) => adminActions.install(method, options),
         uninstallService: () => adminActions.uninstall(),
-        updateService: () => adminActions.update()
+        updateService: (options) => adminActions.update(options)
     } : localApi;
     return { status: SERVICE_STATUS, statusService, ...api };
 
@@ -154,14 +167,31 @@ function createServiceModeManager(dependencies) {
     }
 
     function createLinuxManager() {
+        // https://deepwiki.com/search/76c51094-70b0-4b3f-bb5a-ba915c0fc5db
+        const openrcScript = "/etc/init.d/clash-core-service"; 
         const unit = "/usr/lib/systemd/system/clash-core-service.service";
         const installService = async () => {
+            const hasSystemd = fs.existsSync("/run/systemd/system") || fs.existsSync("/usr/lib/systemd/system");
+            const hasOpenRC = fs.existsSync("/sbin/openrc-run") || fs.existsSync("/etc/init.d");
+            if (hasSystemd) {
             const command = posixInstallCommand(unit, LINUX_SERVICE.replace("helperPath", installedBinary()));
             await elevated(`systemctl stop clash-core-service 2>/dev/null || true; ${command}; systemctl daemon-reload; systemctl enable clash-core-service; systemctl start clash-core-service`);
+            } else if (hasOpenRC) {
+            const command = posixInstallCommand(openrcScript, LINUX_OPENRC_SERVICE.replace("helperPath", installedBinary()));
+            await elevated(`rc-service clash-core-service stop 2>/dev/null || true; ${command}; chmod 755 ${openrcScript}; rc-update add clash-core-service default; rc-service clash-core-service start`);
+            } else {
+            throw new Error("Unsupported init system!");
+            }
         };
         return {
             installService,
-            uninstallService: () => elevated(`systemctl stop clash-core-service; systemctl disable clash-core-service; rm -f ${unit}; systemctl daemon-reload`),
+            uninstallService: () => {
+            if (hasSystemd) {
+                elevated(`systemctl stop clash-core-service; systemctl disable clash-core-service; rm -f ${unit}; systemctl daemon-reload`)
+            } else if (hasOpenRC){
+                elevated(`rc-service clash-core-service stop; rc-update del clash-core-service; rm -f /etc/init.d/clash-core-service`);
+            }
+            },
             needUpdate: commonNeedUpdate,
             updateService: installService
         };
@@ -190,9 +220,9 @@ function createServiceModeManager(dependencies) {
             return elevated([options.runBefore, body].filter(Boolean).join(" && ")
                 + (options.runAfter ? ` && ${options.runAfter}` : ""));
         };
-        const installService = async (method = 0, { replace = false } = {}) => {
+        const installService = async (method = 0, { replace = false, skipMihomoVerification = false } = {}) => {
             const source = sourceDirectory();
-            const { file: credentialFile } = prepareCredentials();
+            const { file: credentialFile } = prepareCredentials(skipMihomoVerification ? { skipCoreVerification: true } : undefined);
             const manifest = JSON.parse(fs.readFileSync(path.join(source, "core-hashes.json"), "utf8"));
             const common = path.join(source, "../../common");
             const replaceScheduledTask = replace
@@ -313,29 +343,29 @@ function createServiceModeManager(dependencies) {
             || (fs.existsSync(installedScript) && fs.existsSync(installedManifest)
                 && fs.existsSync(installedLauncher));
         return {
-            installService: async (method = 0) => {
+            installService: async (method = 0, options) => {
                 // Reinstall from an inactive old protocol must retire the old
                 // task/service before rotating credentials and starting v2.
                 if (isInstalled()) await uninstallService();
-                await installService(method);
+                await installService(method, options);
             },
             uninstallService,
             needUpdate,
             isInstalled,
-            updateService: async () => {
+            updateService: async (options) => {
                 if (legacyExists()) {
                     await uninstallService();
-                    await installService(0);
+                    await installService(0, options);
                     return;
                 }
                 const method = fs.existsSync(scheduledTaskConfig) || !fs.existsSync(winswBinary) ? 0 : 1;
                 if (method === 0) {
                     await stopWindowsHelper();
-                    await installService(0, { replace: true });
+                    await installService(0, { ...options, replace: true });
                     return;
                 }
                 await uninstallService();
-                await installService(method);
+                await installService(method, options);
             }
         };
 

@@ -39,6 +39,12 @@ async function run() {
     ]);
     assert.equal(invokes[0][3].binaryPath.endsWith("mihomo-windows-amd64.exe"), true);
     assert.equal(invokes[1][3].method, 0);
+    await client.service.install(0, { skipMihomoVerification: true });
+    assert.equal(invokes[2][3].skipMihomoVerification, true);
+    await client.service.update({ skipMihomoVerification: true });
+    assert.equal(invokes[3][3].skipMihomoVerification, true);
+    await client.service.update();
+    assert.equal(invokes[4][3].skipMihomoVerification, false);
 
     const handlers = new Map();
     const elevated = [];
@@ -138,6 +144,14 @@ async function run() {
     assert.match(elevated[1][0], /Clash Core Service/);
     assert.equal(await handler(event, "service", "install", base), true);
     assert.match(elevated[2][0], /schtasks \/create/);
+    // The skip-verification toggle must be persisted into the service
+    // credentials that become service-config.json, and absent when off.
+    assert.equal(await handler(event, "service", "install", { ...base, skipMihomoVerification: true }), true);
+    const skipCredentials = JSON.parse(memoryFiles.get("C:\\Users\\tester\\.config\\clash\\.cfw-service-client.json"));
+    assert.equal(skipCredentials.skipCoreVerification, true);
+    assert.equal(await handler(event, "service", "install", base), true);
+    const verifiedCredentials = JSON.parse(memoryFiles.get("C:\\Users\\tester\\.config\\clash\\.cfw-service-client.json"));
+    assert.equal(verifiedCredentials.skipCoreVerification, undefined);
     const installed = "C:\\Program Files\\Clash for Windows Service";
     for (const name of ["clash-core-service.ps1", "clash-core-service.cmd", "core-hashes.json", "service-config.json"]) memoryFiles.set(path.win32.join(installed, name), "fixture");
     // Installation above created authenticated credentials in the fake filesystem.
@@ -187,6 +201,48 @@ async function run() {
     }
     await assert.rejects(handler(event, "firewall", "add", { ...base,
         binaryPath: path.win32.join(base.filesPath, "win", "arm64", "clash-windows-arm64.exe") }), /not an allowed packaged executable/);
+
+    // Regression: launching through a symlink/AppImage makes the renderer's
+    // exe-derived files path diverge from process.resourcesPath. Both trusted
+    // views must be accepted after realpath resolution; arbitrary paths must
+    // stay rejected.
+    const altHandlers = new Map();
+    const altMainWindow = { webContents: {} };
+    registerNativeAdminIpc({
+        ipcMain: { handle: (channel, handler) => altHandlers.set(channel, handler) },
+        app: {
+            once() {},
+            isPackaged: true,
+            getPath(name) {
+                if (name === "home") return "C:\\Users\\tester";
+                if (name === "exe") return "C:\\package\\Clash for Windows.exe";
+                if (name === "temp") return "C:\\Temp";
+                throw new Error(`unexpected app path ${name}`);
+            }
+        },
+        getMainWindow: () => altMainWindow,
+        fs: {
+            realpathSync: value => value === "C:\\package\\resources\\static\\files"
+                ? "C:\\actual\\resources\\static\\files" : path.win32.resolve(value),
+            existsSync: () => false,
+            readFileSync: () => Buffer.from("fixture")
+        },
+        path: path.win32,
+        crypto: require("node:crypto"),
+        childProcess: {},
+        getPort: () => Promise.resolve(0),
+        sudoPrompt: { exec: () => {} },
+        axios: {},
+        platform: "win32",
+        arch: "x64",
+        resourcesPath: "C:\\actual\\resources"
+    });
+    const altHandler = altHandlers.get("native-admin");
+    const altEvent = { sender: altMainWindow.webContents };
+    const altBase = { clashPath: "C:\\Users\\tester\\.config\\clash", filesPath: "C:\\package\\resources\\static\\files" };
+    assert.equal(await altHandler(altEvent, "service", "status", altBase), "NonExistent");
+    assert.equal(await altHandler(altEvent, "service", "status", { ...altBase, filesPath: "C:\\actual\\resources\\static\\files" }), "NonExistent");
+    await assert.rejects(altHandler(altEvent, "service", "status", { ...altBase, filesPath: "C:\\untrusted\\files" }), /Invalid packaged files path/);
 
     console.log("native administrator IPC smoke: PASS");
 }

@@ -20,6 +20,10 @@ import (
 type servicePolicy struct {
 	DataDirectory string `json:"dataDirectory"`
 	Token         string `json:"token"`
+	// SkipCoreVerification is opt-in from the app settings ("Skip Mihomo
+	// Verification"). It disables the packaged-core hash check so manually
+	// replaced mihomo binaries can run under Service Mode.
+	SkipCoreVerification bool `json:"skipCoreVerification"`
 	corePaths     map[string]string
 	proxyPath     string
 }
@@ -105,6 +109,12 @@ func loadServicePolicy(directory string) (*servicePolicy, error) {
 			return nil, errors.New("unsupported packaged core")
 		}
 		target := filepath.Join(directory, "cores", name)
+		if policy.SkipCoreVerification {
+			info, err := os.Lstat(target)
+			if err != nil || !info.Mode().IsRegular() {
+				return nil, errors.New("packaged executable is not a regular file")
+			}
+		} else
 		if err := verifyInstalledExecutable(target, digest); err != nil {
 			return nil, err
 		}
