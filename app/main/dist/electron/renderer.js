@@ -2322,7 +2322,7 @@ var modifyState = {
                                     return e.abrupt("return", y.Inactive);
                                 case 4:
                                     return e.next = 6, b.get("http://127.0.0.1:53000/ping", {
-                                        timeout: 3e4
+                                        timeout: 5e3
                                     });
                                 case 6:
                                     return n = e.sent, o = n.status, e.abrupt("return", 200 === o ? y.Active : y.Inactive);
@@ -3314,7 +3314,7 @@ var modifyState = {
                                 n = t.secret;
                             return i > 0 ? w().create({
                                 baseURL: "http://127.0.0.1:".concat(i, "/"),
-                                timeout: 5e3,
+                                timeout: 3e4,
                                 headers: {
                                     Authorization: "Bearer ".concat(n)
                                 }
@@ -93885,7 +93885,7 @@ var modifyState = {
                                             }), e.spawnClash()), t.next = 34;
                                             break;
                                         case 26:
-                                            l = [], e.info("正在启动" + o + "\n配置文件目录: " + e.clashPath), (e.portableMode || true) && (l = ["-d", e.clashPath]), c = J().spawn(o, l, {
+                                            l = [], ee.info("正在启动" + o + "\n配置文件目录: " + e.clashPath), (e.portableMode || true) && (l = ["-d", e.clashPath]), c = J().spawn(o, l, {
                                                 windowsHide: !0
                                             }), e.clash = c, _.Z.put(W.Z.LAST_CLASH_PID, e.clash.pid), c.stdout.on("data", function() {
                                                 var t = d()(u().mark((function t(i) {
@@ -95623,7 +95623,7 @@ var modifyState = {
                         connTypeLabels: function() {
                             var e = this.filterTypes[this.filterTypeIndex].key,
                                 t = [];
-                            return this.data.connections.forEach((function(i) {
+                            return this.data.connections?.forEach((function(i) {
                                 var n = ((null == i ? void 0 : i.metadata) || {})[e];
                                 t.includes(n) || t.push(n)
                             })), t.filter((function(e) {
@@ -100211,12 +100211,14 @@ var modifyState = {
                             })))()
                         },
                         nodeHint: function(e) {
-                            var t = this.proxies.find((function(t) {
+                            var pp, pf; // 适配provider场景
+                            e.provider ? (pp = e.provider.proxies, pf = 1) : (pp = this.proxies, pf = 0);
+                            var t = pp.find((function(t) {
                                 return t.name === e.name
                             }));
                             if (!t) return "";
-                            var i = t.data.type;
-                            return "Selector" === i || "Fallback" === i || "URLTest" === i ? "".concat(i, " - ").concat(t.data.now) : "LoadBalance" === i ? "".concat(i, " - ").concat(t.data.all.length, " server").concat(t.data.all.length > 1 ? "s" : "") : i
+                            var i = pf ? t.type : t.data.type;
+                            return "Selector" === i || "Fallback" === i || "URLTest" === i ? "".concat(i, " - ").concat(pf ? t.now : t.data.now) : "LoadBalance" === i ? "".concat(i, " - ").concat(pf ? t?.all?.length : t.data.all.length, " server").concat((pf ? t?.all?.length : t.data.all.length) > 1 ? "s" : "") : i
                         },
                         cancelLatencyTest: function() {
                             this.axiosCancelTokens.length > 0 && (this.axiosCancelTokens.forEach((function(e) {
@@ -100630,7 +100632,7 @@ var modifyState = {
                                 staticClass: "item-bottom"
                             }, [t("div", {
                                 staticClass: "item-hint"
-                            }, [e._v("\n                      " + e._s(o.provider ? "Provider: ".concat(o.provider.name) : e.nodeHint(o)) + "\n                    ")]), e._v(" "), o.udp ? t("div", {
+                            }, [e._v("\n                      " + e._s(o.provider ? "Provider: ".concat(o.provider.name).concat('|', e.nodeHint(o)) : e.nodeHint(o)) + "\n                    ")]), e._v(" "), o.udp ? t("div", { //添加协议
                                 staticClass: "item-udp"
                             }, [e._v("UDP")]) : e._e()])]), e._v(" "), -1 === o.latency ? t("div", {
                                 staticClass: "time"
@@ -104180,7 +104182,7 @@ var modifyState = {
                 const b = (0, _.Z)(v, (function() {
                     var e = this,
                         t = e._self._c;
-                    return e.$slots.default.length ? t("div", {
+                    return e.$slots.default?.length ? t("div", {
                         staticClass: "main-setting-section"
                     }, [t("div", {
                         staticClass: "title"

@@ -39,15 +39,15 @@ if ($LASTEXITCODE -eq 0) {
     exit 1
 }
 
-# Checking electron-packager
-& npx electron-packager --version > $null 2>&1
+# Checking @electron/packager
+& npx @electron/packager --version > $null 2>&1
 if ($LASTEXITCODE -eq 0) {
-    Write-Host 'electron-packager is detected...'
+    Write-Host '@electron/packager is detected...'
 } else {
-    Write-Warning 'Failed! No electron-packager command!'
+    Write-Warning 'Failed! No @electron/packager command!'
     Write-Host 'But npm is detected!'
-    Read-Host 'Press Enter to install electron-packager or Ctrl+C to exit'
-    npm install -g electron-packager
+    Read-Host 'Press Enter to install @electron/packager or Ctrl+C to exit'
+    npm install -g @electron/packager
 }
 
 # Checking asar
@@ -77,16 +77,16 @@ if (-not (Test-Path $outputDir)) {
 }
 
 # Start packaging
-Write-Host 'Starting electron-packager...'
-# & npx electron-packager `
+Write-Host 'Starting @electron/packager...'
+# & npx @electron/packager `
 #     "`"$mainDir`"" "cfw" `
 #     --platform=linux --arch=x64 --electron-version=34.0.0 `
 #     --icon="`"$logoFile`"" --out="`"$outputDir`"" --prune=true --asar
-& npx electron-packager "$mainDir" "cfw" `
-    --platform=linux --arch=x64 --electron-version=41.3.0 `
+& npx @electron/packager "$mainDir" "cfw" `
+    --platform=linux --arch=x64 --electron-version=45.4.1 `
     --icon="$logoFile" --out="$outputDir" --prune=true --asar
 if ($LASTEXITCODE -ne 0) {
-    Write-Error 'electron-packager Failed!'
+    Write-Error '@electron/packager Failed!'
     exit 1
 }
 

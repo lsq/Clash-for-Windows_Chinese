@@ -41,14 +41,14 @@ if ($LASTEXITCODE -eq 0) {
 }
 
 # Checking electron-packager
-& npx electron-packager --version > $null 2>&1
+& npx @electron/packager --version > $null 2>&1
 if ($LASTEXITCODE -eq 0) {
     Write-Host 'electron-packager is detected...'
 } else {
     Write-Warning 'Failed! No electron-packager command!'
     Write-Host 'But npm is detected!'
     # Read-Host 'Press Enter to install electron-packager or Ctrl+C to exit'
-    npm install -g electron-packager
+    npm install -g @electron/packager
 }
 
 # Checking asar
@@ -89,8 +89,9 @@ Write-Host 'Starting electron-packager...'
 #     "`"$mainDir`"" "Clash for Windows" `
 #     --platform=win32 --arch=x64 --electron-version=34.0.0 `
 #     --icon="`"$logoFile`"" --out="`"$outputDir`"" --prune=true --asar
-& npx electron-packager "$mainDir" "Clash for Windows" `
-    --platform=win32 --arch=x64 --electron-version=41.3.0 `
+$env:DEBUG="electron-packager"
+& npx @electron/packager "$mainDir" "Clash for Windows" `
+    --platform=win32 --arch=x64 --electron-version=45.4.1 `
     --icon="$logoFile" --out="$outputDir" --prune=true --asar
 
 if ($LASTEXITCODE -ne 0) {
