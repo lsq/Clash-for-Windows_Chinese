@@ -29,6 +29,7 @@ function mergeSettings(settings = {}) {
         allowRemoteProfileParsers: settings.allowRemoteProfileParsers === true,
         allowHttpExternalLinks: settings.allowHttpExternalLinks === true,
         skipMihomoVerification: settings.skipMihomoVerification === true,   // 新增，默认 false = service 模式校验核心二进制哈希
+        useSystemMihomo: settings.useSystemMihomo === true,   // 新增，默认 false = 用包内二进制
         proxyCore: normalizeCoreType(settings.proxyCore)
     };
 }

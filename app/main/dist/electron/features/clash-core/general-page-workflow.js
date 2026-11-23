@@ -199,13 +199,13 @@ function createGeneralPageWorkflow({
                         await utilities.showMessageBox({ type: "error", message: labels.serviceAlreadyInstalled() });
                         return;
                     }
-                    await this.applyServiceChange("install", method, { skipMihomoVerification: this.settings.skipMihomoVerification });
+                    await this.applyServiceChange("install", method, { skipMihomoVerification: this.settings.skipMihomoVerification, useSystemMihomo: this.settings.useSystemMihomo });
                 }
                 if (selection === 1) {
                     await this.applyServiceChange("uninstall");
                 }
                 if (selection === 2) {
-                    await this.applyServiceChange("update", { skipMihomoVerification: this.settings.skipMihomoVerification });
+                    await this.applyServiceChange("update", { skipMihomoVerification: this.settings.skipMihomoVerification, useSystemMihomo: this.settings.useSystemMihomo });
                 }
             } catch (error) {
                 if (selection === undefined) return;
@@ -223,13 +223,13 @@ function createGeneralPageWorkflow({
                 this.serviceDialogOpen = false;
             }
         },
-        async applyServiceChange(action, method) {
+        async applyServiceChange(action, method, options) {
             const home = this.$parent;
             if (home.proxyBusy) return false;
             home.serviceOperation = "applying";
             try {
                 await this.$nextTick();
-                await service[action](method);
+                await service[action](method, options);
                 if (this.devMode) home.serviceOperation = "";
                 else {
                     home.serviceOperation = "restarting";
@@ -303,7 +303,7 @@ function createGeneralPageWorkflow({
                 });
                 try {
                     if (response === 0) {
-                        await this.applyServiceChange(this.serviceNeedUpdate ? "update" : "install", { skipMihomoVerification: this.settings.skipMihomoVerification });
+                        await this.applyServiceChange(this.serviceNeedUpdate ? "update" : "install", { skipMihomoVerification: this.settings.skipMihomoVerification, useSystemMihomo: this.settings.useSystemMihomo });
                     }
                 } catch (error) {
                     const [selection] = await this.$select({

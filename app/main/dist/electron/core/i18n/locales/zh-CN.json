@@ -195,6 +195,8 @@
   "TUNmodeDescribe": "类似于虚拟网卡，启用后可代理所有应用。要启用此模式，请先安装服务模式",
   "skipMihomoVerification": "跳过 Mihomo 校验",
   "skipMihomoVerificationDescribe": "开启后 Linux/Windows 服务模式不再校验核心二进制文件的哈希（适用于手动替换 mihomo 核心的场景）。会降低安全性，需重新安装或更新服务模式后生效",
+  "useSystemMihomo": "使用系统安装的 Mihomo",
+  "useSystemMihomoDescribe": "服务模式直接使用系统包管理器安装的 mihomo 二进制（如 /usr/bin/mihomo），而非应用内置版本。仅 Linux 生效，需重新安装服务模式后生效",
   "recommended": "推荐",
   "installMethod": "安装方法:",
   "cmmandsInCopied": "命令已复制到剪贴板",

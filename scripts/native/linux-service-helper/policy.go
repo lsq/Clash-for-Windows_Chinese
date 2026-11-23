@@ -24,6 +24,7 @@ type servicePolicy struct {
 	// Verification"). It disables the packaged-core hash check so manually
 	// replaced mihomo binaries can run under Service Mode.
 	SkipCoreVerification bool `json:"skipCoreVerification"`
+	CoreOverrides map[string]string `json:"coreOverrides"`
 	corePaths     map[string]string
 	proxyPath     string
 }
@@ -119,6 +120,26 @@ func loadServicePolicy(directory string) (*servicePolicy, error) {
 			return nil, err
 		}
 		policy.corePaths[name] = target
+	}
+	for name, target := range policy.CoreOverrides {
+		switch name {
+		case "clash-linux", "mihomo-linux-amd64", "mihomo-linux-arm64",
+			"clash-darwin", "mihomo-darwin-amd64", "mihomo-darwin-arm64":
+		default:
+			return nil, errors.New("unsupported core override")
+		}
+		resolved, err := filepath.EvalSymlinks(target)
+		if err != nil || !filepath.IsAbs(resolved) {
+			return nil, errors.New("invalid core override path")
+		}
+		if err := requireProtectedPath(resolved); err != nil {
+			return nil, err
+		}
+		info, err := os.Stat(resolved)
+		if err != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0111 == 0 {
+			return nil, errors.New("core override is not an executable file")
+		}
+		policy.corePaths[name] = resolved
 	}
 	if digest, exists := helpers["sysproxy"]; exists {
 		policy.proxyPath = filepath.Join(directory, "cores", "sysproxy")

@@ -195,6 +195,8 @@
   "TUNmodeDescribe": "To enable this mode, please install Service Mode first. After enabling, all applications can be proxied.",
   "skipMihomoVerification": "Skip Mihomo Verification",
   "skipMihomoVerificationDescribe": "When enabled, Service Mode on Linux/Windows no longer verifies the hash of core binaries (useful when mihomo is replaced manually). This reduces security; reinstall or update Service Mode to apply",
+  "useSystemMihomo": "Use system installed Mihomo",
+  "useSystemMihomoDescribe": "服务模式直接使用系统包管理器安装的 mihomo 二进制（如 /usr/bin/mihomo），而非应用内置版本。仅 Linux 生效，需重新安装服务模式后生效",
   "recommended": "recommended",
   "installMethod": "Install method:",
   "cmmandsInCopied": "Commands have been copied to Clipboad",

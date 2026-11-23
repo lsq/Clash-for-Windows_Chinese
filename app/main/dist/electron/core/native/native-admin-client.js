@@ -39,9 +39,9 @@ function createNativeAdminClient({ ipcRenderer, getBinaryPath, getClashPath, get
         service: {
             status: () => invoke("service", "status"),
             needUpdate: () => invoke("service", "need-update"),
-            install: (method, options) => invoke("service", "install", { method, skipMihomoVerification: !!(options && options.skipMihomoVerification) }),
+            install: (method, options) => invoke("service", "install", { method, skipMihomoVerification: !!(options && options.skipMihomoVerification), useSystemMihomo: !!(options && options.useSystemMihomo)}),
             uninstall: () => invoke("service", "uninstall"),
-            update: (options) => invoke("service", "update", { skipMihomoVerification: !!(options && options.skipMihomoVerification) })
+            update: (options) => invoke("service", "update", { skipMihomoVerification: !!(options && options.skipMihomoVerification), useSystemMihomo: !!(options && options.useSystemMihomo) })
         }
     };
 }
