@@ -227,6 +227,21 @@ function createSettingsPageRender({ getLanguage, cache, keys, setLanguageIndex, 
                                 },
                                 expression: "settings.skipServiceUpdateCheck"
                             }
+                    })], 1), viewModel._v(" "), createElement("div", { staticClass: "item" }, [
+                    createElement("div", { staticClass: "flex items-center" }, [
+                        createElement("div", [viewModel._v(labels.useSystemMihomo())]),
+                        viewModel._v(" "),
+                        createElement("Info", [viewModel._v(labels.useSystemMihomoDescribe())])
+                    ], 1),
+                    viewModel._v(" "),
+                    createElement("SwitchView", {
+                        model: {
+                            value: viewModel.settings.useSystemMihomo,
+                            callback: function(value) {
+                                viewModel.$set(viewModel.settings, "useSystemMihomo", value)
+                            },
+                            expression: "settings.useSystemMihomo"
+                        }
                     })], 1), viewModel._v(" "), createElement("div", {
                         staticClass: "item"
                     }, [createElement("div", [viewModel._v(labels.guiLogFolder())]), viewModel._v(" "), createElement("MoreHint", {

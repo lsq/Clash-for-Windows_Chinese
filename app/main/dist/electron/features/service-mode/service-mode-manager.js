@@ -144,11 +144,32 @@ function createServiceModeManager(dependencies) {
         });
     }
 
-    function posixInstallCommand(serviceFile, serviceContent) {
+    function findSystemMihomo() {
+        for (const candidate of ["/usr/bin/mihomo", "/usr/local/bin/mihomo", "/bin/mihomo"]) {
+            try {
+                const real = fs.realpathSync(candidate);
+                if (fs.statSync(real).isFile()) return real;
+            } catch (_e) { /* not present */ }
+        }
+        return null;
+    }
+
+    function posixInstallCommand(serviceFile, serviceContent, options = {}) {
         const source = sourceDirectory();
         const destination = posixServiceDirectory(platform);
         const { file } = prepareCredentials();
         const manifest = JSON.parse(fs.readFileSync(path.join(source, "core-hashes.json"), "utf8"));
+
+        let extra;
+        if (platform === "linux" && options.useSystemMihomo) {
+            const name = arch === "arm64" ? "mihomo-linux-arm64" : "mihomo-linux-amd64";
+            const systemPath = findSystemMihomo();
+            if (!systemPath) throw new Error("System mihomo not found");
+            manifest.cores = manifest.cores.filter(c => c.name !== name);
+            extra = { coreOverrides: { [name]: systemPath } };
+        }
+
+        const { file } = prepareCredentials(extra);
         return buildPosixServiceInstall({ platform, path, source, destination, credentialFile: file, manifest, serviceFile, serviceContent });
     }
 
@@ -168,16 +189,16 @@ function createServiceModeManager(dependencies) {
 
     function createLinuxManager() {
         // https://deepwiki.com/search/76c51094-70b0-4b3f-bb5a-ba915c0fc5db
-        const openrcScript = "/etc/init.d/clash-core-service"; 
+        const openrcScript = "/etc/init.d/clash-core-service";
         const unit = "/usr/lib/systemd/system/clash-core-service.service";
-        const installService = async () => {
+        const installService = async (_method, options) => {
             const hasSystemd = fs.existsSync("/run/systemd/system") || fs.existsSync("/usr/lib/systemd/system");
             const hasOpenRC = fs.existsSync("/sbin/openrc-run") || fs.existsSync("/etc/init.d");
             if (hasSystemd) {
-            const command = posixInstallCommand(unit, LINUX_SERVICE.replace("helperPath", installedBinary()));
+            const command = posixInstallCommand(unit, LINUX_SERVICE.replace("helperPath", installedBinary()), options);
             await elevated(`systemctl stop clash-core-service 2>/dev/null || true; ${command}; systemctl daemon-reload; systemctl enable clash-core-service; systemctl start clash-core-service`);
             } else if (hasOpenRC) {
-            const command = posixInstallCommand(openrcScript, LINUX_OPENRC_SERVICE.replace("helperPath", installedBinary()));
+            const command = posixInstallCommand(openrcScript, LINUX_OPENRC_SERVICE.replace("helperPath", installedBinary()), options);
             await elevated(`rc-service clash-core-service stop 2>/dev/null || true; ${command}; chmod 755 ${openrcScript}; rc-update add clash-core-service default; rc-service clash-core-service start`);
             } else {
             throw new Error("Unsupported init system!");
@@ -193,7 +214,7 @@ function createServiceModeManager(dependencies) {
             }
             },
             needUpdate: commonNeedUpdate,
-            updateService: installService
+            updateService: (_method, options) => installService(_method, options)
         };
     }
 
