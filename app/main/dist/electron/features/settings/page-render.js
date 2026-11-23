@@ -214,6 +214,19 @@ function createSettingsPageRender({ getLanguage, cache, keys, setLanguageIndex, 
                             },
                             expression: "settings.lightweightMode"
                         }
+                    })], 1), viewModel._v(" "), createElement("div", { staticClass: "item" }, [
+                        createElement("div", { staticClass: "flex items-center" }, [
+                            createElement("div", [viewModel._v(labels.skipServiceUpdateCheck())]),
+                            viewModel._v(" "),
+                            createElement("Info", [viewModel._v(labels.skipServiceUpdateCheckDescribe())])
+                        ], 1), viewModel._v(" "), createElement("SwitchView", {
+                            model: {
+                                value: viewModel.settings.skipServiceUpdateCheck,
+                                callback: function(value) {
+                                    viewModel.$set(viewModel.settings, "skipServiceUpdateCheck", value)
+                                },
+                                expression: "settings.skipServiceUpdateCheck"
+                            }
                     })], 1), viewModel._v(" "), createElement("div", {
                         staticClass: "item"
                     }, [createElement("div", [viewModel._v(labels.guiLogFolder())]), viewModel._v(" "), createElement("MoreHint", {

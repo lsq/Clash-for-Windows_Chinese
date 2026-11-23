@@ -74,7 +74,7 @@ function createGeneralPageWorkflow({
         "settings.proxyCore"() { this.invalidateCoreVersion(); this.refreshFirewallStatus(); },
         isLocalMode() { this.refreshFirewallStatus(); },
         "$parent.isCoreRestarting"(value) { if (value) this.invalidateCoreVersion(); else this.refreshFirewallStatus(); },
-        async clashPath() { this.serviceNeedUpdate = await service.needUpdate(); }
+        async clashPath() { this.serviceNeedUpdate = this.settings.skipServiceUpdateCheck ? false : await service.needUpdate(); }
     };
 
     const computed = {
@@ -607,7 +607,7 @@ function createGeneralPageWorkflow({
     function beforeRouteEnter(_to, _from, next) {
         next(async vm => {
             vm.version = `v${await electron.ipcRenderer.invoke("app", "getVersion")}`;
-            vm.serviceNeedUpdate = await service.needUpdate();
+            vm.serviceNeedUpdate = this.settings.skipServiceUpdateCheck ? false : await service.needUpdate();
             vm.setupComponent();
             schedule(vm.setupSwitches, 1);
         });

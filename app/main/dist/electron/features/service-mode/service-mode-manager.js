@@ -42,6 +42,19 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target`;
 
+const LINUX_OPENRC_SERVICE = `
+#!/sbin/openrc-run
+name="clash-core-service"
+description="Clash core service created by Clash for Windows"
+command="helperPath"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+depend() {
+    need net
+    after firewall
+}
+`;
+
 function createServiceModeManager(dependencies) {
     const {
         platform,
@@ -154,14 +167,31 @@ function createServiceModeManager(dependencies) {
     }
 
     function createLinuxManager() {
+        // https://deepwiki.com/search/76c51094-70b0-4b3f-bb5a-ba915c0fc5db
+        const openrcScript = "/etc/init.d/clash-core-service"; 
         const unit = "/usr/lib/systemd/system/clash-core-service.service";
         const installService = async () => {
+            const hasSystemd = fs.existsSync("/run/systemd/system") || fs.existsSync("/usr/lib/systemd/system");
+            const hasOpenRC = fs.existsSync("/sbin/openrc-run") || fs.existsSync("/etc/init.d");
+            if (hasSystemd) {
             const command = posixInstallCommand(unit, LINUX_SERVICE.replace("helperPath", installedBinary()));
             await elevated(`systemctl stop clash-core-service 2>/dev/null || true; ${command}; systemctl daemon-reload; systemctl enable clash-core-service; systemctl start clash-core-service`);
+            } else if (hasOpenRC) {
+            const command = posixInstallCommand(openrcScript, LINUX_OPENRC_SERVICE.replace("helperPath", installedBinary()));
+            await elevated(`rc-service clash-core-service stop 2>/dev/null || true; ${command}; chmod 755 ${openrcScript}; rc-update add clash-core-service default; rc-service clash-core-service start`);
+            } else {
+            throw new Error("Unsupported init system!");
+            }
         };
         return {
             installService,
-            uninstallService: () => elevated(`systemctl stop clash-core-service; systemctl disable clash-core-service; rm -f ${unit}; systemctl daemon-reload`),
+            uninstallService: () => {
+            if (hasSystemd) {
+                elevated(`systemctl stop clash-core-service; systemctl disable clash-core-service; rm -f ${unit}; systemctl daemon-reload`)
+            } else if (hasOpenRC){
+                elevated(`rc-service clash-core-service stop; rc-update del clash-core-service; rm -f /etc/init.d/clash-core-service`);
+            }
+            },
             needUpdate: commonNeedUpdate,
             updateService: installService
         };

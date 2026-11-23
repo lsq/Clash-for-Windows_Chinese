@@ -193,6 +193,8 @@
   "notRemoveTapDevice": "counld not remove cfw-tap device",
   "TUNmode": "TUN Mode",
   "TUNmodeDescribe": "To enable this mode, please install Service Mode first. After enabling, all applications can be proxied.",
+  "skipServiceUpdateCheck": "Skip Service Update Check",
+  "skipServiceUpdateCheckDescribe": "Do not check whether installed Service Mode files match the bundled versions (useful when core binaries are replaced manually)",
   "recommended": "recommended",
   "installMethod": "Install method:",
   "cmmandsInCopied": "Commands have been copied to Clipboad",
