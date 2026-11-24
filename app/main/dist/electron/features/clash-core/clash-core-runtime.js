@@ -137,8 +137,26 @@ function createClashCoreRuntime({
 
         if (logLevel !== "silent") {
             const stream = fs.createWriteStream(logPath, { flags: "a" });
-            processHandle.stdout.pipe(stream);
-            processHandle.stderr.pipe(stream);
+            // Never let file backpressure pause stdout/stderr: a paused pipe lets the
+            // OS pipe fill, which blocks the core's stdout write while it holds the
+            // logrus mutex and deadlocks the whole core. Drop chunks instead once the
+            // buffered backlog exceeds the cap.
+            const MAX_BUFFERED = 4 * 1024 * 1024; // 4MB
+            let droppedBytes = 0;
+            const writeLog = chunk => {
+                if (stream.writableLength > MAX_BUFFERED) {
+                    droppedBytes += chunk.length;
+                    return;
+                }
+                if (droppedBytes > 0) {
+                    stream.write(`\n[CFW] ${droppedBytes} bytes of core log dropped (disk too slow)\n`);
+                    droppedBytes = 0;
+                }
+                stream.write(chunk);
+            };
+            processHandle.stdout.on("data", writeLog);
+            processHandle.stderr.on("data", writeLog);
+            processHandle.on("exit", () => stream.end());
             onLogFile(logPath);
         }
         return { processHandle, serviceMode: false };
