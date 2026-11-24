@@ -10,17 +10,17 @@ const { downloadFile, extractBinary } = require("./mihomo-download");
 const repositoryRoot = path.resolve(__dirname, "../..");
 const manifestRelative = "app/clash_core/mihomo-core-manifest.json";
 const targets = Object.freeze({
-    "win-x64": { platform: "win32", arch: "x64", directory: "win_x64", asset: "windows-amd64-compatible", extension: "zip" },
+    "win-x64": { platform: "win32", arch: "x64", directory: "win_x64", asset: "windows-amd64-v3", extension: "zip" },
     "win-arm64": { platform: "win32", arch: "arm64", directory: "win32-arm64", asset: "windows-arm64", extension: "zip" },
-    "linux-x64": { platform: "linux", arch: "x64", directory: "linux-x64", asset: "linux-amd64-compatible", extension: "gz" },
+    "linux-x64": { platform: "linux", arch: "x64", directory: "linux-x64", asset: "linux-amd64-v3", extension: "gz" },
     "linux-arm64": { platform: "linux", arch: "arm64", directory: "linux-arm64", asset: "linux-arm64", extension: "gz" },
-    "mac-x64": { platform: "darwin", arch: "x64", directory: "darwin-x64", asset: "darwin-amd64-compatible", extension: "gz" },
+    "mac-x64": { platform: "darwin", arch: "x64", directory: "darwin-x64", asset: "darwin-amd64-v3", extension: "gz" },
     "mac-arm64": { platform: "darwin", arch: "arm64", directory: "darwin-arm64", asset: "darwin-arm64", extension: "gz" }
 });
 
 function validateVersion(version) {
     if (typeof version !== "string" || !/^\d+\.\d+\.\d+$/.test(version)) {
-        throw new Error("Expected an exact Mihomo version, for example 1.19.31");
+        throw new Error("Expected an exact Mihomo version, for example 1.19.34");
     }
     const components = version.split(".").map(component => Number(component));
     const canonical = components.join(".");
@@ -53,7 +53,8 @@ function targetSpec(name, version) {
 }
 
 function readManifest(root = repositoryRoot) {
-        const manifest = JSON.parse(fs.readFileSync(path.join(root, manifestRelative), "utf8").replace(/^\uFEFF/, ""));
+    const manifest = JSON.parse(fs.readFileSync(path.join(root, manifestRelative), "utf8").replace(/^\uFEFF/, ""));
+    // console.log(manifest)
     if (manifest.project !== "MetaCubeX/mihomo"
         || !Array.isArray(manifest.targets) || manifest.targets.length !== Object.keys(targets).length) {
         throw new Error("Invalid Mihomo dependency manifest");
