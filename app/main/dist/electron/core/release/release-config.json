@@ -1,7 +1,7 @@
 {
   "version": "0.20.39.5",
   "displayVersion": "Opt-5",
-  "electronVersion": "44.7.2",
+  "electronVersion": "45.4.1",
   "productName": "Clash for Windows",
   "applicationId": "com.lbyczf.clashwin",
   "repository": "Z-Siqi/Clash-for-Windows_Chinese",
