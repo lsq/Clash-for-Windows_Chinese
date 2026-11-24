@@ -518,7 +518,7 @@ controllerServer.listen(0, "127.0.0.1", async () => {
     }));
     process.chdir(fixtureWorkingDirectory);
     fs.writeFileSync(path.join(clashDirectory, "config.yml"), [
-        `mixed-port: ${await require(path.join(root, "app/main/node_modules/get-port"))({ host: "127.0.0.1" })}`,
+        `mixed-port: ${await require(path.join(root, "app/main/node_modules/get-port")).default({ host: "127.0.0.1" })}`,
         `external-controller: 127.0.0.1:${port}`,
         "secret: ''",
         "mode: rule",

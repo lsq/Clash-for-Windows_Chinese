@@ -20,6 +20,7 @@ function createClashCoreRuntime({
     }
 
     async function stop({ processHandle, lightweightMode, platform }) {
+        if (processHandle) processHandle.cfwStopping = true; // 新增
         killProcess(processHandle, platform);
         if (!lightweightMode) {
             await serviceApi.stop().catch(() => {});
@@ -119,11 +120,19 @@ function createClashCoreRuntime({
                 logger.info("clash core startup success!");
                 await onCoreReady();
             }
-            if (/ERR|level=error/i.test(text)) logger.error(startupErrorMessage);
+            // 修复日志有ERR字样的误报
+            if (!readyNotified && /ERR|level=error/i.test(text)) logger.error(startupErrorMessage);
         };
         processHandle.stdout.on("data", handleOutput);
         processHandle.stderr.on("data", handleOutput);
-        processHandle.on("exit", () => {});
+        // stop() 里 kill 之前：stopping = true;
+        processHandle.on("exit", (code, signal) => {
+            if (!readyNotified) {
+                logger.error(`${startupErrorMessage} (exit code=${code}, signal=${signal})`);
+            } else if (!processHandle.cfwStopping) {
+                logger.error(`clash core exited unexpectedly (code=${code}, signal=${signal})`);
+            }
+        });
         processHandle.on("error", () => logger.error(startupErrorMessage));
 
         if (logLevel !== "silent") {

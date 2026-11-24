@@ -48,12 +48,11 @@ name="clash-core-service"
 description="Clash core service created by Clash for Windows"
 command="helperPath"
 command_background=true
-pidfile="/run/${RC_SVCNAME}.pid"
+pidfile="/run/\${RC_SVCNAME}.pid"
 depend() {
     need net
     after firewall
-}
-`;
+}`;
 
 function createServiceModeManager(dependencies) {
     const {

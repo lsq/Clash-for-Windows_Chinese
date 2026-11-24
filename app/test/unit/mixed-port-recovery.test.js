@@ -3,7 +3,7 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const net = require("node:net");
-const getPort = require("../../main/node_modules/get-port");
+const getPort = require("../../main/node_modules/get-port").default;
 const {
     isTcpPortAvailable,
     findAvailableTcpPort,
