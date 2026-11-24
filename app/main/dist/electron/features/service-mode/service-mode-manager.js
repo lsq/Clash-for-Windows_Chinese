@@ -48,12 +48,11 @@ name="clash-core-service"
 description="Clash core service created by Clash for Windows"
 command="helperPath"
 command_background=true
-pidfile="/run/${RC_SVCNAME}.pid"
+pidfile="/run/\${RC_SVCNAME}.pid"
 depend() {
     need net
     after firewall
-}
-`;
+}`;
 
 function createServiceModeManager(dependencies) {
     const {
@@ -157,7 +156,6 @@ function createServiceModeManager(dependencies) {
     function posixInstallCommand(serviceFile, serviceContent, options = {}) {
         const source = sourceDirectory();
         const destination = posixServiceDirectory(platform);
-        const { file } = prepareCredentials();
         const manifest = JSON.parse(fs.readFileSync(path.join(source, "core-hashes.json"), "utf8"));
 
         let extra;
