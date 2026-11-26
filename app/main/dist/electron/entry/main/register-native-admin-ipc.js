@@ -35,12 +35,6 @@ function registerNativeAdminIpc({
     const expectedFilesPath = app.isPackaged
         ? path.join(packagedResourcesPath, "static", "files")
         : path.resolve("static", "files");
-    // The renderer derives its files path from app.getPath("exe"). Launching
-    // through a symlink, an AppImage mount or a Windows short path makes that
-    // view diverge from process.resourcesPath, so accept either trusted view.
-    const exeViewFilesPath = app.isPackaged
-        ? path.join(path.dirname(app.getPath("exe")), platform === "darwin" ? "../Resources" : "resources", "static", "files")
-        : null;
     const allowedClashPaths = new Set([
         path.resolve(app.getPath("home"), ".config", "clash"),
         path.resolve(app.getPath("exe"), "..", "data")
@@ -84,7 +78,7 @@ function registerNativeAdminIpc({
         if (!mainWindow || event.sender !== mainWindow.webContents || event.senderFrame !== mainWindow.webContents.mainFrame) {
             throw new Error("Native administrator request did not originate from the main window");
         }
-        const filesPath = requirePackagedFilesPath(payload.filesPath);
+        const filesPath = requireExactPath(payload.filesPath, expectedFilesPath, "packaged files");
         const clashPath = requireAllowedClashPath(payload.clashPath);
         if (scope === "terminal") {
             if (platform !== "win32") return false;
@@ -299,21 +293,6 @@ function registerNativeAdminIpc({
 
     function normalizePath(value) {
         return platform === "win32" ? value.toLowerCase() : value;
-    }
-
-    function canonicalFilesCandidate(value) {
-        const resolved = path.resolve(value);
-        try { return normalizePath(fs.realpathSync(resolved)); } catch (_error) { return normalizePath(resolved); }
-    }
-
-    function requirePackagedFilesPath(candidate) {
-        if (typeof candidate !== "string") throw new Error("Invalid packaged files path");
-        const canonical = canonicalFilesCandidate(candidate);
-        const trusted = exeViewFilesPath ? [expectedFilesPath, exeViewFilesPath] : [expectedFilesPath];
-        if (!trusted.some(expected => canonicalFilesCandidate(expected) === canonical)) {
-            throw new Error("Invalid packaged files path");
-        }
-        return path.resolve(expectedFilesPath);
     }
 
     function requireExactPath(candidate, expected, label) {

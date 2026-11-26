@@ -109,11 +109,31 @@ function createRendererRuntime({
         isActive: () => store.state.app.isWindowShow,
         createId: lodash.uniqueId
     });
+    // 路径就绪条件：clashPath 已设置，且（非 dev 模式下）exePath 已设置。
+    // exePath 在 dev 模式恒为 ""（home/page-options.js:994），filesPath 在 dev 模式合法地为 "static/files"，
+    // 所以 exePath 只在非 dev 模式下作为就绪条件。
+    const PATHS_READY_TIMEOUT = 15000;
+    const pathsReady = new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("Timed out waiting for CFW paths to initialize")), PATHS_READY_TIMEOUT);
+        const unwatch = store.watch(
+            () => store.state.app.clashPath !== "" &&
+                (store.state.app.isDevMode || store.state.app.exePath !== ""),
+            ready => {
+                if (ready) {
+                    clearTimeout(timer);
+                    unwatch();
+                    resolve();
+                }
+            },
+            { immediate: true }
+        );
+    });
     const nativeAdmin = createNativeAdminClient({
         ipcRenderer: electron.ipcRenderer,
         getBinaryPath: () => store.getters.clashBinaryPath,
         getClashPath: () => store.state.app.clashPath,
-        getFilesPath: () => store.getters.filesPath
+        getFilesPath: () => store.getters.filesPath,
+        whenReady: () => pathsReady,
     });
     const firewall = nativeAdmin.firewall;
     const serviceModule = createServiceModeClient({ service: nativeAdmin.service });

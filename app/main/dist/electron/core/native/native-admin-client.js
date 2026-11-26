@@ -1,10 +1,20 @@
 "use strict";
 
-function createNativeAdminClient({ ipcRenderer, getBinaryPath, getClashPath, getFilesPath }) {
-    const invoke = (scope, action, extra = {}) => ipcRenderer.invoke("native-admin", scope, action, {
+function createNativeAdminClient({ ipcRenderer, getBinaryPath, getClashPath, getFilesPath, whenReady = () => Promise.resolve() }) {
+    const invoke = (scope, action, extra = {}) => whenReady().then(() => {
+        const clashPath = getClashPath();  
+        const filesPath = getFilesPath();  
+        if (typeof clashPath !== "string" || clashPath === "") {  
+            throw new Error("CFW data directory is not initialized yet");  
+        }  
+        if (typeof filesPath !== "string" || filesPath === "") {  
+            throw new Error("Packaged files path is not initialized yet");  
+        }
+        return ipcRenderer.invoke("native-admin", scope, action, {
         ...extra,
         clashPath: getClashPath(),
         filesPath: getFilesPath()
+        });
     });
 
     return {
